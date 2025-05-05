@@ -21,8 +21,8 @@ const links = [
   { to: "/appointments", label: "Appointments", icon: <Calendar size={20} /> },
   { to: "/patientdetail", label: "Patient Details", icon: <ClipboardList size={20} /> },
   { to: "/department", label: "Departments", icon: <Building size={20} /> },
-  { to: "/", label: "Login", icon: <LogIn size={20} /> },
-  { to: "/notfound", label: "Not Found", icon: <AlertCircle size={20} /> },
+  // { to: "/", label: "Login", icon: <LogIn size={20} /> },
+  // { to: "/notfound", label: "Not Found", icon: <AlertCircle size={20} /> },
 ];
 
 const Sidebar = () => {

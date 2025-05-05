@@ -47,6 +47,7 @@ export const updateDoctor = createAsyncThunk(
           Authorization: adminToken,
         },
       });
+      console.log(response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Update failed");
@@ -74,30 +75,30 @@ export const deleteDoctor = createAsyncThunk(
 );
 
 //Get All Patients
-export const getallPatient = createAsyncThunk("auth/getallPatient",async(_,{rejectWithValue})=>{
-  try{
-    const user =JSON.parse(localStorage.getItem('currentUser'));
-    const token =user?.token;
+// export const getallPatient = createAsyncThunk("auth/getallPatient",async(_,{rejectWithValue})=>{
+//   try{
+//     const user =JSON.parse(localStorage.getItem('currentUser'));
+//     const token =user?.token;
     
-    const response =await axios.get("http://localhost:8000/admin/getallpatient",{
-                headers:{
-                  Authorization:token
-                }
-    });
-    console.log("thunk data patient:",response.data.data);
+//     const response =await axios.get("http://localhost:8000/admin/getallpatient",{
+//                 headers:{
+//                   Authorization:token
+//                 }
+//     });
+//     console.log("thunk data patient:",response.data.data);
     
-    return response.data.data
-  }catch(err){
-           return rejectWithValue(err.response?.data?.message || "Failed to get data")
-  }
-})
+//     return response.data.data
+//   }catch(err){
+//            return rejectWithValue(err.response?.data?.message || "Failed to get data")
+//   }
+// })
 
 //GetAll Receptionlist
 export const getallreception =createAsyncThunk("auth/getallreception",async(_,{rejectWithValue})=>{
   try{
     const user = JSON.parse(localStorage.getItem('currentUser'));  
     const token = user?.token;
-
+    console.log("token: ", token);
     const response =await axios.get("http://localhost:8000/admin/allreceptionist",{
            headers:{
             Authorization:token
