@@ -5,13 +5,14 @@ import Register from './Pages/Admin/Register';
 import Sidebar from './Pages/Sidebar/Sidebar';
 import DoctorLogin from './Pages/doctorConsultant/DoctorLogin';
 import DoctorRegister from './Pages/doctorConsultant/DoctorRegister';
-import Dashboard from './Pages/Sidebar/Dashboard';
 import Patients from './Pages/Sidebar/Patients';
 import Receptionists from './Pages/Sidebar/Receptionists';
 import Departments from './Pages/Sidebar/Departments';
 import Appointments from './Pages/Sidebar/Appointments';
 import PatientDetail from './Pages/Sidebar/PatientDetail';
 import NotFound from './Pages/Sidebar/NotFound';
+import Consultant from './Pages/Sidebar/Consultant';
+import Dashboard from './Pages/Sidebar/Dashboard';
 
 function App() {
   
@@ -24,6 +25,7 @@ function App() {
         <Route path="/home" element={<Sidebar/>} />
         <Route path="/doctor/login" element={<DoctorLogin/>} />
         <Route path="/doctor/register" element={<DoctorRegister/>} />
+        <Route path="/consultant" element={<Consultant/>} />
         <Route path='/dashboard' element={<Dashboard/>}/>
         <Route path='/patient' element={<Patients/>}/>
         <Route path='/receptionists' element={<Receptionists/>}/>

@@ -1,50 +1,42 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getallreception} from "../../Store/docterConsutant/doctorThunk";
+import { getConsultantData } from "../../Store/auththunk";
 import {
-  registerReception ,
-  deleteReception ,
-  updateReception ,
+  registerDoctor,
+  deleteDoctor,
+  updateDoctor,
 } from "../../Store/docterConsutant/doctorThunk";
 import Sidebar from "./Sidebar";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-function Receptionists() {
+function Consultant() {
   const dispatch = useDispatch();
   //get consultantdata
-  const { Reception } = useSelector((state) => state.auth);
-  const [showForm, setShowForm] = useState(false);
+  const { consultant } = useSelector((state) => state.auth);
   
   //create from cosultant
-  const [receptiondata, setReceptiondata] = useState([]);
-  useEffect(() => {
-    setReceptiondata(Reception);
-  }, [Reception]);
-  useEffect(() => {
-    dispatch(getallreception());
-  }, [dispatch]);
-
-  const [create, setcreate] = useState(false);
-      const Createconslutent = () => {
-        setcreate(!create);
-      };
-
-
-      const [formData,setFormData]=useState({
-        name:"",
-        username:"",
-        email:"",
-        phoneNumber:"",
-        gender:"",
-        dateOfBirth:"",
-        password:""
-      })
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    cIN: "",
+    name: "",
+    gender: "",
+    email: "",
+    dateOfBirth: "",
+    specialty: "",
+    qualifications: "",
+    medicalLicenseNumber: "",
+    phoneNumber: "",
+    yearsOfExperience: "",
+    username: "",
+    password: "",
+  });
 
   //view update 
   const [showModal, setShowModal] = useState(false);
   const [modalData, setModalData] = useState(null);
+  
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
@@ -60,34 +52,40 @@ function Receptionists() {
     try {
       if (isEditing) {
         // Update existing consultant
-        await dispatch(updateReception({ id: editingId, updatedData: formData })).unwrap();
+        await dispatch(updateDoctor({ id: editingId, updatedData: formData })).unwrap();
         toast.success("Consultant updated successfully!");
       } else {
         // Register new consultant
-        await dispatch(registerReception(formData)).unwrap();
+        await dispatch(registerDoctor(formData)).unwrap();
         toast.success("Consultant created successfully!");
       }
   
       // Reset form after submit
       setFormData({
-        name:"",
-        username:"",
-        email:"",
-        phoneNumber:"",
-        gender:"",
-        dateOfBirth:"",
-        password:""
+        cIN: "",
+        name: "",
+        gender: "",
+        email: "",
+        dateOfBirth: "",
+        specialty: "",
+        qualifications: "",
+        medicalLicenseNumber: "",
+        phoneNumber: "",
+        yearsOfExperience: "",
+        username: "",
+        password: "",
       });
       setShowForm(false);
       setIsEditing(false);
       setEditingId(null);
-      dispatch(getallreception()); 
+      dispatch(getConsultantData()); // Refresh consultant list
     } catch (err) {
       console.error("Error submitting form:", err);
       toast.error("Error occurred, please try again!");
     }
   };
   
+
   const handleView = (item) => {
     setModalData(item);
     setShowModal(true);
@@ -95,12 +93,17 @@ function Receptionists() {
 
   const handleEdit = (item) => {
     setFormData({
+      cIN: item.cIN || "",
       name: item.name || "",
-      username: item.username || "",
-      email: item.email || "",
-      phoneNumber: item.phoneNumber || "",
       gender: item.gender || "",
+      email: item.email || "",
       dateOfBirth: item.dateOfBirth || "",
+      specialty: item.specialty || "",
+      qualifications: item.qualifications || "",
+      medicalLicenseNumber: item.medicalLicenseNumber || "",
+      phoneNumber: item.phoneNumber || "",
+      yearsOfExperience: item.yearsOfExperience || "",
+      username: item.username || "",
       password: "", 
     });
     setShowForm(true);
@@ -112,9 +115,9 @@ function Receptionists() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this consultant?")) {
       try {
-        await dispatch(deleteReception(id)).unwrap();
+        await dispatch(deleteDoctor(id)).unwrap();
         toast.success("Consultant deleted successfully!");
-        dispatch(getallreception()); 
+        dispatch(getConsultantData()); 
       } catch (err) {
         toast.error("Error deleting consultant.");
         console.error("Delete error:", err);
@@ -123,7 +126,7 @@ function Receptionists() {
   };
 
   useEffect(() => {
-    dispatch(getallreception());
+    dispatch(getConsultantData());
   }, [dispatch]);
 
   const inputClass = "border w-52 px-3 py-1 rounded-md";
@@ -156,7 +159,6 @@ function Receptionists() {
               onChange={handleInputChange}
               className={inputClass}
             />
-            
             <input
               type="text"
               name="username"
@@ -264,13 +266,17 @@ function Receptionists() {
             <thead className="bg-gray-100 text-gray-700">
               <tr>
                 {[
-               "name",
-               "username",
-               "email",
-               "phoneNumber",
-               "gender",
-               "dateOfBirth",
-               "password",
+                  "CIN",
+                  "Name",
+                  "Gender",
+                  "Date of Birth",
+                  "Specialty",
+                  "Qualifications",
+                  "License No.",
+                  "Experience (Years)",
+                  "Contact",
+                  "Username",
+                  "Actions",
                 ].map((header) => (
                   <th key={header} className="px-4 py-2 border">
                     {header}
@@ -279,7 +285,7 @@ function Receptionists() {
               </tr>
             </thead>
             <tbody>
-              {Reception?.map((item, index) => (
+              {consultant?.map((item, index) => (
                 <tr key={index} className="hover:bg-gray-50">
                   <td className="px-4 py-2 border">{item.cIN}</td>
                   <td className="px-4 py-2 border">{item.name}</td>
@@ -355,4 +361,4 @@ function Receptionists() {
   );
 }
 
-export default Receptionists;
+export default Consultant;

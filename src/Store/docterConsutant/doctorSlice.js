@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { loginDoctor, registerDoctor } from "../docterConsutant/doctorThunk";
+import { loginDoctor, registerDoctor, updateDoctor } from "../docterConsutant/doctorThunk";
 
 const initialState = {
   user: null,
@@ -49,6 +49,22 @@ const authSlice = createSlice({
         
       })
       .addCase(registerDoctor.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+     
+      })
+
+      // Handle update
+      .addCase(updateDoctor.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateDoctor.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        
+      })
+      .addCase(updateDoctor.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
      
