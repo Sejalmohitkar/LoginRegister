@@ -1,32 +1,55 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getallreception } from "../../Store/docterConsutant/doctorThunk";
 import {
+  getallreception,
   registerReception,
-  // deleteReception ,
-  updateReception ,
+  deleteReception,
+  viewReception,
+  updateReception,
 } from "../../Store/docterConsutant/doctorThunk";
-import Sidebar from "./Sidebar";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Sidebar from "./Sidebar";
 
-function Receptionists() {
+function Receptionist() {
   const dispatch = useDispatch();
-  //get consultantdata
-  const { Reception } = useSelector((state) => state.auth);
+  const { Reception, status, error, RecetionById } = useSelector(
+    (state) => state.doctor
+  );
+  const [receptionData, setReceptionData] = useState([]);
   const [showForm, setShowForm] = useState(false);
 
-  //create from cosultant
-  const [receptiondata, setReceptiondata] = useState([]);
-  useEffect(() => {
-    setReceptiondata(Reception);
-  }, [Reception]);
+  //update Receptionist
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
+  // handle view
+  const [open, setOpen] = useState(false);
+
+  const handleView = async (id) => {
+    try {
+      await dispatch(viewReception(id)).unwrap();
+      setOpen(true);
+    } catch (err) {
+      console.error("Error:", err);
+      toast.error("Failed to load Receptionist details");
+    }
+  };
+
+  // get Reception data
   useEffect(() => {
     dispatch(getallreception());
   }, [dispatch]);
 
+  useEffect(() => {
+    setReceptionData(Reception);
+  }, [Reception]);
+
+  const toggleForm = () => setShowForm(!showForm);
+
   const [formData, setFormData] = useState({
+    rID: "",
     name: "",
     username: "",
     email: "",
@@ -36,18 +59,9 @@ function Receptionists() {
     password: "",
   });
 
-  //view update
-  const [showModal, setShowModal] = useState(false);
-  const [modalData, setModalData] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
-
-  const toggleForm = () => setShowForm((prev) => !prev);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -66,6 +80,7 @@ function Receptionists() {
 
       // Reset form after submit
       setFormData({
+        rID: "",
         name: "",
         username: "",
         email: "",
@@ -77,20 +92,16 @@ function Receptionists() {
       setShowForm(false);
       setIsEditing(false);
       setEditingId(null);
-      dispatch(getallreception());
+      dispatch(getallreception()); // Refresh consultant list
     } catch (err) {
       console.error("Error submitting form:", err);
       toast.error("Error occurred, please try again!");
     }
   };
 
-  const handleView = (item) => {
-    setModalData(item);
-    setShowModal(true);
-  };
-
   const handleEdit = (item) => {
     setFormData({
+      rID: item.rID || "",
       name: item.name || "",
       username: item.username || "",
       email: item.email || "",
@@ -104,29 +115,26 @@ function Receptionists() {
     setEditingId(item._id || item.id);
   };
 
-  // const handleDelete = async (id) => {
-  //   if (window.confirm("Are you sure you want to delete this consultant?")) {
-  //     try {
-  //       await dispatch(deleteReception(id)).unwrap();
-  //       toast.success("Consultant deleted successfully!");
-  //       dispatch(getallreception());
-  //     } catch (err) {
-  //       toast.error("Error deleting consultant.");
-  //       console.error("Delete error:", err);
-  //     }
-  //   }
-  // };
-
-  useEffect(() => {
-    dispatch(getallreception());
-  }, [dispatch]);
+  // handle delete
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this consultant?")) {
+      try {
+        await dispatch(deleteReception(id)).unwrap();
+        toast.success("Consultant deleted successfully!");
+        dispatch(getallreception());
+      } catch (err) {
+        toast.error("Error deleting consultant.");
+        console.error("Delete error:", err);
+      }
+    }
+  };
 
   const inputClass = "border w-52 px-3 py-1 rounded-md";
 
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex flex-col w-full p-2">
+      <div className="flex flex-col w-full p-4">
         <main className="flex flex-col p-6 overflow-auto">
           <div className="mb-1 text-end">
             <button
@@ -138,11 +146,22 @@ function Receptionists() {
           </div>
         </main>
 
+        {status === "loading" && <p>Loading receptionists...</p>}
+        {status === "failed" && <p style={{ color: "red" }}>Error: {error}</p>}
+
         {showForm && (
           <form
             onSubmit={handleSubmit}
             className="absolute right-0 z-10 grid grid-cols-1 gap-4 p-4 mb-6 mt-20 bg-gray-300 rounded-md shadow md:grid-cols-2"
           >
+            <input
+              type="text"
+              name="rID"
+              value={formData.rID}
+              placeholder="rID"
+              onChange={handleInputChange}
+              className={inputClass}
+            />
             <input
               type="text"
               name="name"
@@ -213,18 +232,36 @@ function Receptionists() {
           </form>
         )}
 
-        <div className="relative overflow-x-auto mt-4">
+        {/* handle Receptionist View */}
+        {open && RecetionById && (
+          <div className="bg-slate-100  shadow-2xl z-30 rounded-md ms-10 absolute mt-36 right-96 p-4">
+            {Object.entries(RecetionById).map(([key, value]) => (
+              <p key={key}>
+                <strong>{key}:</strong> {value}
+              </p>
+            ))}
+            <button
+              onClick={() => setOpen(false)}
+              className="mt-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Close
+            </button>
+          </div>
+        )}
+
+        <div className="relative mt-4 overflow-x-auto">
           <table className="w-full text-sm text-left border border-gray-300">
-            <thead className="bg-gray-100 text-gray-700">
+            <thead className="text-gray-700 bg-gray-100">
               <tr>
                 {[
-                  "name",
-                  "username",
-                  "email",
-                  "phoneNumber",
-                  "gender",
-                  "dateOfBirth",
-                  "password",
+                  "rID",
+                  "Name",
+                  "Email",
+                  "Phone",
+                  "Username",
+                  "Gender",
+                  "DOB",
+                  "Action",
                 ].map((header) => (
                   <th key={header} className="px-4 py-2 border">
                     {header}
@@ -233,26 +270,26 @@ function Receptionists() {
               </tr>
             </thead>
             <tbody>
-              {Reception?.map((item, index) => (
+              {receptionData.map((item, index) => (
                 <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 border">{item.rID}</td>
                   <td className="px-4 py-2 border">{item.name}</td>
+                  <td className="px-4 py-2 border">{item.email}</td>
+                  <td className="px-4 py-2 border">{item.phoneNumber}</td>
                   <td className="px-4 py-2 border">{item.username}</td>
-                  <td className="px-4 py-2 border">
-                    {item.email}
-                    <span className="flex">{item.phoneNumber}</span>
-                  </td>
                   <td className="px-4 py-2 border">{item.gender}</td>
                   <td className="px-4 py-2 border">{item.dateOfBirth}</td>
                   <td className="px-4 py-2 border">
                     <div className="flex justify-center gap-2">
-                      <button onClick={() => handleView(item)} title="View">
+                      <button title="View" onClick={() => handleView(item.rID)}>
                         <FaEye className="text-blue-600 hover:text-blue-800" />
                       </button>
                       <button onClick={() => handleEdit(item)} title="Edit">
                         <FaEdit className="text-green-600 hover:text-green-700" />
                       </button>
                       <button
-                        // onClick={() => handleDelete(item._id || item.id)}
+                        type="button"
+                        onClick={() => handleDelete(item._id)}
                         title="Delete"
                       >
                         <FaTrash className="text-red-600 hover:text-red-700" />
@@ -261,45 +298,14 @@ function Receptionists() {
                   </td>
                 </tr>
               ))}
-              {Reception?.length === 0 && (
-                <tr>
-                  <td colSpan="11" className="px-4 py-2 text-center border">
-                    No consultant data found.
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
+
+        <ToastContainer />
       </div>
-
-      <ToastContainer />
-
-      {/* //view consultant data */}
-      {showModal && modalData && (
-        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded shadow-lg w-100 relative">
-            <h2 className="text-lg font-bold mb-2 text-center">
-              Consultant Details
-            </h2>
-            <ul className="text-sm space-y-1">
-              {Object.entries(modalData).map(([key, value]) => (
-                <li key={key}>
-                  <strong>{key}:</strong> {value}
-                </li>
-              ))}
-            </ul>
-            <button
-              className="absolute top-2 right-2 text-gray-600 hover:text-black"
-              onClick={() => setShowModal(false)}
-            >
-              ✖
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-export default Receptionists;
+export default Receptionist;

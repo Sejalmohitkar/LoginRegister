@@ -1,10 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {getallpatient} from "../../Store/docterConsutant/doctorThunk";
+// import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
+// import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "./Sidebar";
 
 const Patients = () => {
   const [showForm, setShowForm] = useState(false);
+   const dispatch = useDispatch();
+  const {Patients} = useSelector((state) => state.doctor);
 
   const toggleForm = () => setShowForm((prev) => !prev);
+  useEffect(() =>
+  {
+    dispatch(getallpatient())
+  },[dispatch])
 
   return (
     <div className="flex">
@@ -90,32 +101,29 @@ const Patients = () => {
           <table className="w-full text-sm  text-left border border-gray-300">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
-                <th className="px-4 py-2 border">CIN</th>
                 <th className="px-4 py-2 border">Name</th>
                 <th className="px-4 py-2 border">Gender</th>
                 <th className="px-4 py-2 border">DateOfBirth</th>
-                <th className="px-4 py-2 border">Specialty</th>
+                <th className="px-4 py-2 border">Age</th>
                 <th className="px-4 py-2 border">Address</th>
                 <th className="px-4 py-2 border">phoneNumber</th>
-                <th className="px-4 py-2 border">Username</th>
-                <th className="px-4 py-2 border">Email</th>
+                <th className="px-4 py-2 border">Patient Type</th>
+                <th className="px-4 py-2 border">Action</th>
               </tr>
             </thead>
             <tbody>
-              {/* {consultantsdata.map((item,index) => (
+              {Patients.map((item,index) => (
               <tr key={index} className="hover:bg-gray-50">
-                <td className="px-4 py-2 border">{item.cIN}</td>
                 <td className="px-4 py-2 border">{item.name}</td>
-                <td className="px-4 py-2 border">{item.gender}</td>
-                <td className="px-4 py-2 border">{item.dataOfBirth}</td>
-                <td className="px-4 py-2 border text-center">{item.specialty}</td>
+                <td className="px-4 py-2 border">{item.sex}</td>
+                <td className="px-4 py-2 border">{item.dob}</td>
+                <td className="px-4 py-2 border text-center">{item.age}</td>
                 <td className="px-4 py-2 border">{item.address}</td>
-                <td className="px-4 py-2 border">{item.phoneNumber}</td>
-                <td className="px-4 py-2 border">{item.username}</td>
-                <td className="px-4 py-2 border">{item.email}</td>
+                <td className="px-4 py-2 border">{item.personal_ph_no}</td>
+                <td className="px-4 py-2 border">{item.patienttype}</td>
               </tr>
             )
-            )} */}
+            )}
             </tbody>
           </table>
         </div>

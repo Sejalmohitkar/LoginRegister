@@ -33,10 +33,11 @@ function Consultant() {
     password: "",
   });
 
-  //view update 
+  //view 
   const [showModal, setShowModal] = useState(false);
   const [modalData, setModalData] = useState(null);
-  
+
+  //update
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
 

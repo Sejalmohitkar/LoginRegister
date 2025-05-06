@@ -36,17 +36,22 @@ export const loginDoctor = createAsyncThunk(
   }
 );
 
-//edit/update consultant
+// edit/update consultant
 export const updateDoctor = createAsyncThunk(
   "auth/updateDoctor",
   async ({ id, updatedData }, { rejectWithValue }) => {
-    const adminToken = localStorage.getItem("currentUser");
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    const token = user?.token; 
     try {
-      const response = await axios.put(`http://localhost:8000/admin/updateconsultant/${id}`, updatedData, {
-        headers: {
-          Authorization: adminToken,
-        },
-      });
+      const response = await axios.patch(
+        `http://localhost:8000/admin/updateconsultant/${id}`,
+        updatedData,
+        {
+          headers: {
+            Authorization: token, 
+          },
+        }
+      );
       console.log(response.data);
       return response.data;
     } catch (error) {
@@ -54,7 +59,6 @@ export const updateDoctor = createAsyncThunk(
     }
   }
 );
-
 
 // Delete Doctor Thunk
 export const deleteDoctor = createAsyncThunk(
@@ -93,12 +97,12 @@ export const deleteDoctor = createAsyncThunk(
 //   }
 // })
 
-//GetAll Receptionlist
-export const getallreception =createAsyncThunk("auth/getallreception",async(_,{rejectWithValue})=>{
+// Get All Receptionist 
+export const getallreception = createAsyncThunk("auth/getallreception",async(_,{rejectWithValue})=>{
   try{
     const user = JSON.parse(localStorage.getItem('currentUser'));  
     const token = user?.token;
-    console.log("token: ", token);
+
     const response =await axios.get("http://localhost:8000/admin/allreceptionist",{
            headers:{
             Authorization:token
@@ -112,23 +116,101 @@ export const getallreception =createAsyncThunk("auth/getallreception",async(_,{r
   }
 })
 
-//create reception list
-// export const registerReception =createAsyncThunk("auth/registerReception",async(formData,{rejectWithValue})=>{
-//   try{
-//     const user = JSON.parse(localStorage.getItem("currentUser"));
-//     const token=user?.token;
-//     const response=await axios.post("http://localhost:8000/admin/registerreceptionist",formData,{
-//       headers:{
-//         Authorization:token
-//       }
-//     });
-//     console.log(response.data.data);
+ //create reception list
+ export const registerReception =createAsyncThunk("auth/registerReception",async(formData,{rejectWithValue})=>{
+  try{
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    const token=user?.token;
+    const response=await axios.post("http://localhost:8000/admin/registerreceptionist",formData,{
+      headers:{
+        Authorization:token
+      }
+    });
+    console.log(response.data.data);
     
-//     return response.data,data;
-//   }catch(err){
-//     return thunkAPI.rejectWithValue(err.response?.data?.message || 'Registration failed');
+    return response.data.data;
+  }catch(err){
+    return rejectWithValue(err.response?.data?.message || 'Registration failed');
 
-//   }
-// })
+  }
+})
 
+// Delete Reception Thunk
+export const deleteReception = createAsyncThunk(
+  "auth/deleteReception",
+  async (id, { rejectWithValue }) => {
+    const token = JSON.parse(localStorage.getItem("currentUser"))?.token;
+    try {
+      await axios.delete(`http://localhost:8000/admin/deletereceptionist/${id}`, {
+        headers: { Authorization: token }
+      });
+      return id;   
+    } catch (error) {
+      // Always pass string — cleaner
+      const errorMessage = error.response?.data?.message || "Delete failed";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+//view Recptionist by Id
+export const viewReception = createAsyncThunk("auth/viewReception",
+  async(rID,{rejectWithValue}) => {
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    const token = user?.token;
+    try{
+      const response = await axios.get(`http://localhost:8000/admin/receptionistbyid/${rID}`, {
+        headers:{
+          Authorization: token
+        }
+      })
+      console.log(response.data.data);
+      return response.data.data
+    }catch(err){
+      const errorMessage = err.response?.data?.message || "'get data by id failed";
+      return rejectWithValue(errorMessage);
+    }
+  }
+)
+
+//update Receptionist
+export const updateReception = createAsyncThunk(
+  "auth/updateReception",
+  async ({ id, updatedData }, { rejectWithValue }) => {
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    const token = user?.token; 
+    try {
+      const response = await axios.patch(
+        `http://localhost:8000/admin/updatereceptionist/${id}`,
+        updatedData,
+        {
+          headers: {
+            Authorization: token, 
+          },
+        }
+      );
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Update failed");
+    }
+  }
+);
+
+// Get All Paitent
+export const getallpatient = createAsyncThunk("auth/getallpatient",async(_,{rejectWithValue}) => {
+  try{
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    const token = user?.token;
+    const response = await axios.get("http://localhost:8000/admin/getallpatient", {
+      headers:{
+        Authorization:token
+      }
+    })
+    console.log(response.data.data);
+    return response.data.data;
+  }catch(err){
+    return rejectWithValue(err.response?.data?.message || "Failed to get data")
+  }
+})
 
