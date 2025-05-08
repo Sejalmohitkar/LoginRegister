@@ -5,6 +5,7 @@ import {
   registerDoctor,
   deleteDoctor,
   updateDoctor,
+  viewConsultant,
 } from "../../Store/docterConsutant/doctorThunk";
 import Sidebar from "./Sidebar";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
@@ -14,8 +15,8 @@ import "react-toastify/dist/ReactToastify.css";
 function Consultant() {
   const dispatch = useDispatch();
   //get consultantdata
-  const { consultant } = useSelector((state) => state.auth);
-  
+  const { consultant, ConsultantById } = useSelector((state) => state.auth);
+
   //create from cosultant
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -33,9 +34,9 @@ function Consultant() {
     password: "",
   });
 
-  //view 
-  const [showModal, setShowModal] = useState(false);
-  const [modalData, setModalData] = useState(null);
+  //view
+  const [opendata, setOpendata] = useState(false);
+  const [allcosultant, setAllConsultant] = useState([]);
 
   //update
   const [isEditing, setIsEditing] = useState(false);
@@ -53,14 +54,16 @@ function Consultant() {
     try {
       if (isEditing) {
         // Update existing consultant
-        await dispatch(updateDoctor({ id: editingId, updatedData: formData })).unwrap();
+        await dispatch(
+          updateDoctor({ id: editingId, updatedData: formData })
+        ).unwrap();
         toast.success("Consultant updated successfully!");
       } else {
         // Register new consultant
         await dispatch(registerDoctor(formData)).unwrap();
         toast.success("Consultant created successfully!");
       }
-  
+
       // Reset form after submit
       setFormData({
         cIN: "",
@@ -85,12 +88,10 @@ function Consultant() {
       toast.error("Error occurred, please try again!");
     }
   };
-  
 
-  const handleView = (item) => {
-    setModalData(item);
-    setShowModal(true);
-  };
+  useEffect(() => {
+    dispatch(getConsultantData());
+  }, [dispatch]);
 
   const handleEdit = (item) => {
     setFormData({
@@ -105,20 +106,19 @@ function Consultant() {
       phoneNumber: item.phoneNumber || "",
       yearsOfExperience: item.yearsOfExperience || "",
       username: item.username || "",
-      password: "", 
+      password: "",
     });
     setShowForm(true);
     setIsEditing(true);
     setEditingId(item._id || item.id);
   };
-  
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this consultant?")) {
       try {
         await dispatch(deleteDoctor(id)).unwrap();
         toast.success("Consultant deleted successfully!");
-        dispatch(getConsultantData()); 
+        dispatch(getConsultantData());
       } catch (err) {
         toast.error("Error deleting consultant.");
         console.error("Delete error:", err);
@@ -129,6 +129,25 @@ function Consultant() {
   useEffect(() => {
     dispatch(getConsultantData());
   }, [dispatch]);
+
+  //view
+  const handleView = async (cIN) => {
+    try {
+      await dispatch(viewConsultant(cIN)).unwrap();
+      setOpendata(true);
+    } catch (error) {
+      console.error("view error:", error);
+      toast.error("Failed to load consultant details.");
+    }
+  };
+
+  useEffect(() => {
+    if (ConsultantById) {
+      setAllConsultant(ConsultantById[0]);
+      setOpendata(false);
+    }
+  }, [ConsultantById]);
+  console.log(ConsultantById);
 
   const inputClass = "border w-52 px-3 py-1 rounded-md";
 
@@ -148,118 +167,135 @@ function Consultant() {
         </main>
 
         {showForm && (
-          <form
-            onSubmit={handleSubmit}
-            className="absolute right-0 z-10 grid grid-cols-1 gap-4 p-4 mb-6 mt-20 bg-gray-300 rounded-md shadow md:grid-cols-2"
-          >
-            <input
-              type="text"
-              name="cIN"
-              value={formData.cIN}
-              placeholder="CIN"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              placeholder="Username"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              placeholder="Name"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="text"
-              name="gender"
-              value={formData.gender}
-              placeholder="Gender"
-              onChange={handleInputChange}
-              className={inputClass}
-              list="genders"
-            />
-            <datalist id="genders">
-              <option value="Male" />
-              <option value="Female" />
-              <option value="Other" />
-            </datalist>
-            <input
-              type="date"
-              name="dateOfBirth"
-              value={formData.dateOfBirth}
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="text"
-              name="specialty"
-              value={formData.specialty}
-              placeholder="Specialty"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="text"
-              name="medicalLicenseNumber"
-              value={formData.medicalLicenseNumber}
-              placeholder="Medical License Number"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="text"
-              name="yearsOfExperience"
-              value={formData.yearsOfExperience}
-              placeholder="Years of Experience"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="number"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              placeholder="Phone Number"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              placeholder="Password"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              placeholder="Email"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="text"
-              name="qualifications"
-              value={formData.qualifications}
-              placeholder="Qualifications"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <button
-              type="submit"
-              className="w-full col-span-1 px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700 md:col-span-2"
-            >
-              {isEditing ? "Update" : "Create"}
-            </button>
-          </form>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white rounded-lg shadow-lg min-w-[700px] max-w-2xl p-6 overflow-y-auto max-h-[90vh]">
+              <h2 className="text-2xl font-semibold mb-4 text-center">
+                {isEditing ? "Update Doctor" : "Create Doctor"}
+              </h2>
+
+              <form
+                onSubmit={handleSubmit}
+                className="grid grid-cols-1 gap-4 md:grid-cols-2"
+              >
+                <input
+                  type="text"
+                  name="cIN"
+                  value={formData.cIN}
+                  placeholder="CIN"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  placeholder="Username"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  placeholder="Name"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  name="gender"
+                  value={formData.gender}
+                  placeholder="Gender"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                  list="genders"
+                />
+                <datalist id="genders">
+                  <option value="Male" />
+                  <option value="Female" />
+                  <option value="Other" />
+                </datalist>
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  value={formData.dateOfBirth}
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  name="specialty"
+                  value={formData.specialty}
+                  placeholder="Specialty"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  name="medicalLicenseNumber"
+                  value={formData.medicalLicenseNumber}
+                  placeholder="Medical License Number"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  name="yearsOfExperience"
+                  value={formData.yearsOfExperience}
+                  placeholder="Years of Experience"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="number"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  placeholder="Phone Number"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  placeholder="Password"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  placeholder="Email"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  name="qualifications"
+                  value={formData.qualifications}
+                  placeholder="Qualifications"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <div className="col-span-1 md:col-span-2 flex gap-2 justify-end mt-2">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-white rounded-lg bg-green-600 rounded hover:bg-green-700"
+                  >
+                    {isEditing ? "Update" : "Create"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    className="px-4 py-2 bg-red-500 rounded-lg text-white rounded hover:bg-red-600"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
 
         <div className="relative overflow-x-auto mt-4">
@@ -305,7 +341,7 @@ function Consultant() {
                   <td className="px-4 py-2 border">{item.username}</td>
                   <td className="px-4 py-2 border">
                     <div className="flex justify-center gap-2">
-                      <button onClick={() => handleView(item)} title="View">
+                      <button onClick={() => handleView(item.cIN)} title="View">
                         <FaEye className="text-blue-600 hover:text-blue-800" />
                       </button>
                       <button onClick={() => handleEdit(item)} title="Edit">
@@ -335,25 +371,64 @@ function Consultant() {
 
       <ToastContainer />
 
-      {/* //view consultant data */}
-      {showModal && modalData && (
-        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded shadow-lg w-100 relative">
-            <h2 className="text-lg font-bold mb-2 text-center">
-              Consultant Details
+      {/* //view Department */}
+      {opendata && allcosultant && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="p-6 bg-white rounded shadow-lg w-50">
+            <h2 className="mb-4 text-xl font-semibold text-center">
+              Consultant Detail
             </h2>
-            <ul className="text-sm space-y-1">
-              {Object.entries(modalData).map(([key, value]) => (
-                <li key={key}>
-                  <strong>{key}:</strong> {value}
-                </li>
-              ))}
+            <ul className="mb-4 space-y-2 text-sm">
+              <li>
+                <strong>_id:</strong> {allcosultant._id}
+              </li>
+              <li>
+                <strong>cIN:</strong> {allcosultant.cIN}
+              </li>
+              <li>
+                <strong>Name:</strong> {allcosultant.name}
+              </li>
+              <li>
+                <strong>Gender:</strong> {allcosultant.gender}
+              </li>
+              <li>
+                <strong>DOB:</strong> {allcosultant.dateOfBirth}
+              </li>
+              <li>
+                <strong>Specialty:</strong> {allcosultant.specialty}
+              </li>
+              <li>
+                <strong>Qualifications:</strong> {allcosultant.qualifications}
+              </li>
+              <li>
+                <strong>MedicalLicenseNumber:</strong>{" "}
+                {allcosultant.medicalLicenseNumber}
+              </li>
+              <li>
+                <strong>yearsOfExperience:</strong>{" "}
+                {allcosultant.yearsOfExperience}
+              </li>
+              <li>
+                <strong>Email:</strong> {allcosultant.email}
+              </li>
+              <li>
+                <strong>PhoneNumber:</strong> {allcosultant.phoneNumber}
+              </li>
+              <li>
+                <strong>Username:</strong> {allcosultant.username}
+              </li>
+              <li>
+                <strong>_createdAt:</strong> {allcosultant.createdAt}
+              </li>
+              <li>
+                <strong>_updatedAt:</strong> {allcosultant.updatedAt}
+              </li>
             </ul>
             <button
-              className="absolute top-2 right-2 text-gray-600 hover:text-black"
-              onClick={() => setShowModal(false)}
+              onClick={() => setOpendata(false)}
+              className=" w-full px-4 mt-2 text-white bg-red-600 rounded hover:bg-red-700"
             >
-              ✖
+              Close
             </button>
           </div>
         </div>

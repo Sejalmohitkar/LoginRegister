@@ -1,135 +1,366 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {getallpatient} from "../../Store/docterConsutant/doctorThunk";
-// import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
-// import { toast, ToastContainer } from "react-toastify";
+import {
+  getallPatient,
+  registerPatient,
+  deletePatient,
+  updatePatients,
+  viewPatient,
+} from "../../Store/docterConsutant/doctorThunk";
+import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "./Sidebar";
 
-const Patients = () => {
+function Patients() {
+  const dispatch = useDispatch();
+  const { Patient, status, error, PatientById } = useSelector(
+    (state) => state.doctor
+  );
+  const [patientData, setPatientData] = useState([]);
   const [showForm, setShowForm] = useState(false);
-   const dispatch = useDispatch();
-  const {Patients} = useSelector((state) => state.doctor);
 
-  const toggleForm = () => setShowForm((prev) => !prev);
-  useEffect(() =>
-  {
-    dispatch(getallpatient())
-  },[dispatch])
+  //update Receptionist
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
+  //view Patient
+  const [opendata, setOpendata] = useState(false);
+  const [allpatient, setAllpatient] = useState([]);
+
+
+  // get Reception data
+  useEffect(() => {
+    dispatch(getallPatient());
+  }, [dispatch]);
+
+  useEffect(() => {
+    setPatientData(Patient);
+  }, [Patient]);
+
+  const toggleForm = () => setShowForm(!showForm);
+
+  const [formData, setFormData] = useState({
+    pIN: "",
+    name: "",
+    sex: "",
+    dob: "",
+    address: "",
+    personal_ph_no: "",
+    patienttype: "",
+    password: "",
+    age: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (isEditing) {
+        // Update existing consultant
+        await dispatch(
+          updatePatients({ id: editingId, updatedData: formData })
+        ).unwrap();
+        toast.success("Patient updated successfully!");
+      } else {
+        // Register new consultant
+        await dispatch(registerPatient(formData)).unwrap();
+        toast.success("Patient created successfully!");
+      }
+
+      // Reset form after submit
+      setFormData({
+        pIN: "",
+        name: "",
+        sex: "",
+        dob: "",
+        address: "",
+        personal_ph_no: "",
+        patienttype: "",
+        password: "",
+        age: "",
+      });
+      setShowForm(false);
+      setIsEditing(false);
+      setEditingId(null);
+      dispatch(getallPatient());
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      toast.error("Error occurred, please try again!");
+    }
+  };
+
+  const handleEdit = (item) => {
+    setFormData({
+      pIN: item.pIN || "",
+      name: item.name || "",
+      sex: item.sex || "",
+      dob: item.dob || "",
+      address: item.address || "",
+      personal_ph_no: item.personal_ph_no || "",
+      patienttype: item.patienttype || "",
+      password: item.password || "",
+      age: item.age || "",
+    });
+    setShowForm(true);
+    setIsEditing(true);
+    setEditingId(item._id || item.id);
+  };
+
+  // handle delete
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this consultant?")) {
+      try {
+        await dispatch(deletePatient(id)).unwrap();
+        toast.success("Patient deleted successfully!");
+        dispatch(getallPatient());
+      } catch (err) {
+        toast.error("Error deleting consultant.");
+        console.error("Delete error:", err);
+      }
+    }
+  };
+
+  //view 
+    const handleView = async (pIN) => {
+      try {
+        await dispatch(viewPatient(pIN)).unwrap();
+        setOpendata(true);
+      } catch (error) {
+        console.error("view error:", error);
+        toast.error("Failed to load department details.");
+      }
+    };
+  
+    useEffect(() => {
+      if (PatientById) {
+        setAllpatient(PatientById[0]);
+        setOpendata(false);
+      }
+    }, [PatientById]);
+    console.log(PatientById);
+
+  
 
   return (
     <div className="flex">
-      <div>
-        <Sidebar />
-      </div>
-
-      <div className="flex flex-col w-full p-2">
+      <Sidebar />
+      <div className="flex flex-col w-full p-4">
         <main className="flex flex-col p-6 overflow-auto">
           <div className="mb-1 text-end">
             <button
               onClick={toggleForm}
-              className="px-2 py-2 text-white transition duration-200 bg-blue-600 rounded-md hover:bg-blue-700"
+              className="px-4 py-2 text-white transition duration-200 bg-blue-600 rounded-md hover:bg-blue-700"
             >
               {showForm ? "Close" : "Create +"}
             </button>
           </div>
         </main>
 
+        {status === "loading" && <p>Loading receptionists...</p>}
+        {status === "failed" && <p style={{ color: "red" }}>Error: {error}</p>}
+
         {showForm && (
-          <form className="absolute right-0 z-10 grid grid-cols-1 gap-4 p-4 mb-6 mt-20 bg-gray-300 rounded-md shadow md:grid-cols-2 text-end">
+          <form
+            onSubmit={handleSubmit}
+            className="absolute right-0 z-10 grid grid-cols-1 gap-4 p-4 mb-6 mt-20 bg-gray-300 rounded-md shadow md:grid-cols-2"
+          >
             <input
               type="text"
-              placeholder="CIN"
+              name="pIN"
+              value={formData.pIN}
+              onChange={handleChange}
+              placeholder="pIN"
               className="p-2 border rounded"
             />
             <input
               type="text"
-              placeholder="Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Full Name"
+              className="p-2 border rounded"
+            />
+            <select
+              name="sex"
+              value={formData.sex}
+              onChange={handleChange}
+              className="p-2 border rounded"
+            >
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Female">others</option>
+            </select>
+            <input
+              type="date"
+              name="dob"
+              value={formData.dob}
+              onChange={handleChange}
               className="p-2 border rounded"
             />
             <input
               type="text"
-              placeholder="Username"
-              className="p-2 border rounded"
-            />
-            <input
-              type="email"
-              placeholder="Email"
+              name="age"
+              value={formData.age}
+              onChange={handleChange}
+              placeholder="Age"
               className="p-2 border rounded"
             />
             <input
               type="text"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              placeholder="Address"
+              className="p-2 border rounded"
+            />
+            <input
+              type="text"
+              name="personal_ph_no"
+              value={formData.personal_ph_no}
+              onChange={handleChange}
               placeholder="Phone Number"
               className="p-2 border rounded"
             />
-            <select className="p-2 border rounded">
-              <option value="">Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="female">Other</option>
-            </select>
-            <input
-              type="number"
-              placeholder="medicalLicenceNumber"
-              className="p-2 border rounded"
-            />
-            <input
-              type="date"
-              placeholder="DOB"
-              className="p-2 border rounded"
-            />
             <input
               type="text"
-              placeholder="Qualification"
+              name="patienttype"
+              value={formData.patienttype}
+              onChange={handleChange}
+              placeholder="Patient Type"
               className="p-2 border rounded"
             />
             <input
-              type="number"
-              placeholder="Years of Experience"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
               className="p-2 border rounded"
             />
             <button
               type="submit"
-              className="w-1/2 col-span-1 px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700 md:col-span-2"
+              className="w-full col-span-1 px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700 md:col-span-2"
             >
-              Submit
+              {isEditing ? "Update" : "Create"}
             </button>
           </form>
         )}
 
-        <div className="relative overflow-x-auto">
-          <table className="w-full text-sm  text-left border border-gray-300">
-            <thead className="bg-gray-100 text-gray-700">
+        <div className="relative mt-4 overflow-x-auto">
+          <table className="w-full text-sm text-left border border-gray-300">
+            <thead className="text-gray-700 bg-gray-100">
               <tr>
-                <th className="px-4 py-2 border">Name</th>
-                <th className="px-4 py-2 border">Gender</th>
-                <th className="px-4 py-2 border">DateOfBirth</th>
-                <th className="px-4 py-2 border">Age</th>
-                <th className="px-4 py-2 border">Address</th>
-                <th className="px-4 py-2 border">phoneNumber</th>
-                <th className="px-4 py-2 border">Patient Type</th>
-                <th className="px-4 py-2 border">Action</th>
+                {[
+                  "pIN",
+                  "name",
+                  "Gender",
+                  "dob",
+                  "address",
+                  "personal_ph_no",
+                  "patienttype",
+                  "age",
+                  "Action",
+                ].map((header) => (
+                  <th key={header} className="px-4 py-2 border">
+                    {header}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {Patients.map((item,index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="px-4 py-2 border">{item.name}</td>
-                <td className="px-4 py-2 border">{item.sex}</td>
-                <td className="px-4 py-2 border">{item.dob}</td>
-                <td className="px-4 py-2 border text-center">{item.age}</td>
-                <td className="px-4 py-2 border">{item.address}</td>
-                <td className="px-4 py-2 border">{item.personal_ph_no}</td>
-                <td className="px-4 py-2 border">{item.patienttype}</td>
-              </tr>
-            )
-            )}
+              {patientData.map((item, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 border">{item.pIN}</td>
+                  <td className="px-4 py-2 border">{item.name}</td>
+                  <td className="px-4 py-2 border">{item.sex}</td>
+                  <td className="px-4 py-2 border">{item.dob}</td>
+                  <td className="px-4 py-2 border">{item.address}</td>
+                  <td className="px-4 py-2 border">{item.personal_ph_no}</td>
+                  <td className="px-4 py-2 border">{item.patienttype}</td>
+                  <td className="px-4 py-2 border">{item.age}</td>
+                  <td className="px-4 py-2 border">
+                    <div className="flex justify-center gap-2">
+                      <button title="View" onClick={() => handleView(item.pIN)}>
+                        <FaEye className="text-blue-600 hover:text-blue-800" />
+                      </button>
+                      <button onClick={() => handleEdit(item)} title="Edit">
+                        <FaEdit className="text-green-600 hover:text-green-700" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(item._id)}
+                        title="Delete"
+                      >
+                        <FaTrash className="text-red-600 hover:text-red-700" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
+
+        <ToastContainer />
+                {/* //view Department */}
+          {opendata && allpatient && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="p-6 bg-white rounded shadow-lg w-50">
+              <h2 className="mb-4 text-xl font-semibold text-center">
+                Patients Detail
+              </h2>
+              <ul className="mb-4 space-y-2 text-sm">
+                <li>
+                  <strong>_id:</strong> {allpatient._id} 
+                </li>
+                <li>
+                  <strong>pIN:</strong> {allpatient.pIN}
+                </li>
+                <li>
+                  <strong>Name:</strong> {allpatient.name}
+                </li>
+                <li>
+                  <strong>Gender:</strong> {allpatient.sex}
+                </li>
+                <li>
+                  <strong>DOB:</strong> {allpatient.dob}
+                </li>
+                <li>
+                  <strong>Address:</strong> {allpatient.address}
+                </li>
+                <li>
+                  <strong>personal_ph_no:</strong> {allpatient.personal_ph_no}
+                </li>
+                <li>
+                  <strong>patienttype:</strong> {allpatient.patienttype}
+                </li>
+                <li>
+                  <strong>Age:</strong> {allpatient.age}
+                </li>
+                <li>
+                  <strong>_createdAt:</strong> {allpatient.createdAt}
+                </li>
+                <li>
+                  <strong>_updatedAt:</strong> {allpatient.updatedAt}
+                </li>
+              </ul>
+              <button
+                onClick={() => setOpendata(false)}
+                className=" w-full px-4 mt-2 text-white bg-red-600 rounded hover:bg-red-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
-};
+}
 
 export default Patients;

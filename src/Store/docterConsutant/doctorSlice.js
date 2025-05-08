@@ -3,23 +3,36 @@ import {
   loginDoctor,
   registerDoctor,
   updateDoctor,
+  viewConsultant,
   getallreception,
   registerReception,
   deleteReception,
   viewReception,
   updateReception,
-  getallpatient,
+  getallPatient,
+  registerPatient,
+  updatePatients,
+  deletePatient,
+  viewPatient,
+  getallDepartment,
+  registerDepartment,
+  deleteDepartment,
+  updateDepartment,
+  viewDepartment,
 } from "../docterConsutant/doctorThunk";
-
 
 const initialState = {
   user: null, // For doctor data (single user)
   token: null,
   loading: false,
   error: null,
+  ConsultantById: [],
   Reception: [],
   RecetionById: [],
-  Patients: [],
+  Patient: [],
+  PatientById: [],
+  department: [],
+  DepartmentdIN: [],
 };
 
 const authSlice = createSlice({
@@ -76,6 +89,19 @@ const authSlice = createSlice({
       .addCase(updateDoctor.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      //view consultant data
+      .addCase(viewConsultant.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(viewConsultant.fulfilled, (state, action) => {
+        state.status = "Succeeded";
+        state.ConsultantById = action.payload;
+      })
+      .addCase(viewConsultant.rejected, (state, action) => {
+        state.loading = "failed";
+        state.error = action.error.message;
       })
 
       //getallreceptionsit
@@ -143,14 +169,134 @@ const authSlice = createSlice({
         state.error = action.payload;
       })
 
-      //getPatientData
-      .addCase(getallpatient.pending, (state) => {
+      //getallPatient
+      .addCase(getallPatient.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(getallpatient.fulfilled, (state, action) => {
-        (state.status = "succeeded"), (state.Patients = action.payload);
+      .addCase(getallPatient.fulfilled, (state, action) => {
+        (state.status = "succeeded"), (state.Patient = action.payload);
       })
-      .addCase(getallpatient.rejected, (state, action) => {
+      .addCase(getallPatient.rejected, (state, action) => {
+        state.loading = "failed";
+        state.error = action.error.message;
+      })
+
+      // create registerPatient
+      .addCase(registerPatient.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(registerPatient.fulfilled, (state, action) => {
+        (state.status = "succeeded"), (state.user = action.payload);
+      })
+      .addCase(registerPatient.rejected, (state, action) => {
+        state.loading = "failed";
+        state.error = action.error.message;
+      })
+
+      //delete Patient
+      .addCase(deletePatient.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(deletePatient.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.Patient = state.Patient.filter(
+          (patients) => patients.id !== action.payload
+        );
+      })
+      .addCase(deletePatient.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || action.error.message;
+      })
+
+      //update Patients
+      .addCase(updatePatients.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updatePatients.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(updatePatients.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // view Patient by id
+
+      .addCase(viewPatient.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(viewPatient.fulfilled, (state, action) => {
+        state.status = "Succeeded";
+        state.PatientById = action.payload;
+      })
+      .addCase(viewPatient.rejected, (state, action) => {
+        state.loading = "failed";
+        state.error = action.error.message;
+      })
+
+      //get all departments
+      .addCase(getallDepartment.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(getallDepartment.fulfilled, (state, action) => {
+        (state.status = "succeeded"), (state.department = action.payload);
+      })
+      .addCase(getallDepartment.rejected, (state, action) => {
+        (state.status = "failed"), (state.error = action.error.message);
+      })
+
+      //create departments
+      .addCase(registerDepartment.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(registerDepartment.fulfilled, (state, action) => {
+        (state.status = "succeeded"), (state.department = action.payload);
+      })
+      .addCase(registerDepartment.rejected, (state, action) => {
+        state.loading = "failed";
+        state.error = action.error.message;
+      })
+
+      //delete department
+      .addCase(deleteDepartment.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(deleteDepartment.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.department = state.department.filter(
+          (departments) => departments.id !== action.payload
+        );
+      })
+      .addCase(deleteDepartment.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || action.error.message;
+      })
+
+      //update Department
+      .addCase(updateDepartment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateDepartment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(updateDepartment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // view Patient by id
+      .addCase(viewDepartment.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(viewDepartment.fulfilled, (state, action) => {
+        state.status = "Succeeded";
+        state.DepartmentdIN = action.payload;;
+      })
+      .addCase(viewDepartment.rejected, (state, action) => {
         state.loading = "failed";
         state.error = action.error.message;
       });
