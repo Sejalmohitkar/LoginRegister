@@ -2,6 +2,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+
 // consultant register
 export const registerDoctor = createAsyncThunk(
   "auth/registerDoctor",
@@ -9,7 +11,7 @@ export const registerDoctor = createAsyncThunk(
     const adminToken = JSON.parse(localStorage.getItem("currentUser"))?.token;
     try {
       const response = await axios.post(
-        "http://localhost:8000/doctor/register",
+        `${BASE_URL}/doctor/register`,
         credentials,
         {
           headers: {
@@ -29,10 +31,7 @@ export const loginDoctor = createAsyncThunk(
   "auth/loginDoctor",
   async (doctorData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        "http://localhost:8000/doctor/login",
-        doctorData
-      );
+      const response = await axios.post(`${BASE_URL}/doctor/login`, doctorData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Login failed");
@@ -48,7 +47,7 @@ export const updateDoctor = createAsyncThunk(
     const token = user?.token;
     try {
       const response = await axios.patch(
-        `http://localhost:8000/admin/updateconsultant/${id}`,
+        `${BASE_URL}/admin/updateconsultant/${id}`,
         updatedData,
         {
           headers: {
@@ -71,7 +70,7 @@ export const deleteDoctor = createAsyncThunk(
     const token = JSON.parse(localStorage.getItem("currentUser"))?.token;
     try {
       const response = await axios.delete(
-        `http://localhost:8000/admin/deleteConsultant/${doctorId}`,
+        `${BASE_URL}/admin/deleteConsultant/${doctorId}`,
         {
           headers: {
             Authorization: token,
@@ -87,13 +86,13 @@ export const deleteDoctor = createAsyncThunk(
 
 ///ViewConsultant Data by Id
 export const viewConsultant = createAsyncThunk(
-  'auth/viewConsultant',
+  "auth/viewConsultant",
   async (cIN, { rejectWithValue }) => {
     const user = JSON.parse(localStorage.getItem("currentUser"));
     const token = user?.token;
     try {
       const response = await axios.get(
-        `http://localhost:8000/admin/consutantbyid/${cIN}`,  
+        `${BASE_URL}/admin/consutantbyid/${cIN}`,
         {
           headers: {
             Authorization: token,
@@ -110,7 +109,6 @@ export const viewConsultant = createAsyncThunk(
   }
 );
 
-
 // Get All Receptionist
 export const getallreception = createAsyncThunk(
   "auth/getallreception",
@@ -119,14 +117,11 @@ export const getallreception = createAsyncThunk(
       const user = JSON.parse(localStorage.getItem("currentUser"));
       const token = user?.token;
 
-      const response = await axios.get(
-        "http://localhost:8000/admin/allreceptionist",
-        {
-          headers: {
-            Authorization: token,
-          },
-        }
-      );
+      const response = await axios.get(`${BASE_URL}/admin/allreceptionist`, {
+        headers: {
+          Authorization: token,
+        },
+      });
       console.log(response.data.data);
 
       return response.data.data;
@@ -146,7 +141,7 @@ export const registerReception = createAsyncThunk(
       const user = JSON.parse(localStorage.getItem("currentUser"));
       const token = user?.token;
       const response = await axios.post(
-        "http://localhost:8000/admin/registerreceptionist",
+        `${BASE_URL}/admin/registerreceptionist`,
         formData,
         {
           headers: {
@@ -171,12 +166,9 @@ export const deleteReception = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     const token = JSON.parse(localStorage.getItem("currentUser"))?.token;
     try {
-      await axios.delete(
-        `http://localhost:8000/admin/deletereceptionist/${id}`,
-        {
-          headers: { Authorization: token },
-        }
-      );
+      await axios.delete(`${BASE_URL}/admin/deletereceptionist/${id}`, {
+        headers: { Authorization: token },
+      });
       return id;
     } catch (error) {
       // Always pass string — cleaner
@@ -194,7 +186,7 @@ export const viewReception = createAsyncThunk(
     const token = user?.token;
     try {
       const response = await axios.get(
-        `http://localhost:8000/admin/receptionistbyid/${rID}`,
+        `${BASE_URL}/admin/receptionistbyid/${rID}`,
         {
           headers: {
             Authorization: token,
@@ -219,7 +211,7 @@ export const updateReception = createAsyncThunk(
     const token = user?.token;
     try {
       const response = await axios.patch(
-        `http://localhost:8000/admin/updatereceptionist/${id}`,
+        `${BASE_URL}/admin/updatereceptionist/${id}`,
         updatedData,
         {
           headers: {
@@ -243,14 +235,11 @@ export const getallPatient = createAsyncThunk(
       const user = JSON.parse(localStorage.getItem("currentUser"));
       const token = user?.token;
 
-      const response = await axios.get(
-        "http://localhost:8000/admin/getallpatient",
-        {
-          headers: {
-            Authorization: token,
-          },
-        }
-      );
+      const response = await axios.get(`${BASE_URL}/admin/getallpatient`, {
+        headers: {
+          Authorization: token,
+        },
+      });
       console.log(response.data.data);
 
       return response.data.data;
@@ -270,7 +259,7 @@ export const registerPatient = createAsyncThunk(
       const user = JSON.parse(localStorage.getItem("currentUser"));
       const token = user?.token;
       const response = await axios.post(
-        "http://localhost:8000/admin/savepatient",
+        `${BASE_URL}/admin/savepatient`,
         formData,
         {
           headers: {
@@ -295,12 +284,9 @@ export const deletePatient = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     const token = JSON.parse(localStorage.getItem("currentUser"))?.token;
     try {
-      await axios.delete(
-        `http://localhost:8000/admin/deletepatient/${id}`,
-        {
-          headers: { Authorization: token },
-        }
-      );
+      await axios.delete(`${BASE_URL}/admin/deletepatient/${id}`, {
+        headers: { Authorization: token },
+      });
       return id;
     } catch (error) {
       // Always pass string — cleaner
@@ -312,29 +298,26 @@ export const deletePatient = createAsyncThunk(
 
 //view Patient by Id
 
-  export const viewPatient = createAsyncThunk(
-    "auth/viewPatient",
-    async (pIN, { rejectWithValue }) => {
-      const user = JSON.parse(localStorage.getItem("currentUser"));
-      const token = user?.token;
-      try {
-        const response = await axios.get(
-          `http://localhost:8000/admin/getbypin/${pIN}`,
-          {
-            headers: {
-              Authorization: token,
-            },
-          }
-        );
-        console.log(response.data.data);
-        return response.data.data;
-      } catch (err) {
-        const errorMessage =
-          err.response?.data?.message || "'get data by id failed";
-        return rejectWithValue(errorMessage);
-      }
+export const viewPatient = createAsyncThunk(
+  "auth/viewPatient",
+  async (pIN, { rejectWithValue }) => {
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    const token = user?.token;
+    try {
+      const response = await axios.get(`${BASE_URL}/admin/getbypin/${pIN}`, {
+        headers: {
+          Authorization: token,
+        },
+      });
+      console.log(response.data.data);
+      return response.data.data;
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message || "'get data by id failed";
+      return rejectWithValue(errorMessage);
     }
-  );
+  }
+);
 
 //update Patient
 export const updatePatients = createAsyncThunk(
@@ -344,7 +327,7 @@ export const updatePatients = createAsyncThunk(
     const token = user?.token;
     try {
       const response = await axios.patch(
-        `http://localhost:8000/admin/updatepatient/${id}`,
+        `${BASE_URL}/admin/updatepatient/${id}`,
         updatedData,
         {
           headers: {
@@ -361,43 +344,54 @@ export const updatePatients = createAsyncThunk(
 );
 
 //get all Department
-export const getallDepartment = createAsyncThunk("auth/getallDepartment",
-  async(_,{rejectWithValue}) => {
-    try{
+export const getallDepartment = createAsyncThunk(
+  "auth/getallDepartment",
+  async (_, { rejectWithValue }) => {
+    try {
       const user = JSON.parse(localStorage.getItem("currentUser"));
       const token = user?.token;
 
-      const response = await axios.get("http://localhost:8000/admin/alldepartment", {
-        headers:{
-          Authorization : token
-        }
+      const response = await axios.get(`${BASE_URL}/admin/alldepartment`, {
+        headers: {
+          Authorization: token,
+        },
       });
       console.log(response.data.data);
       return response.data.data;
-    }catch(err){
-      return rejectWithValue(err.response?.data?.message || "Failed to get data")
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to get data"
+      );
     }
   }
-)
+);
 
 //create departments
-export const registerDepartment =createAsyncThunk("auth/registerDepartment",async(formData,{rejectWithValue})=>{
-  try{
-    const user = JSON.parse(localStorage.getItem("currentUser"));
-    const token=user?.token;
-    const response=await axios.post("http://localhost:8000/admin/createdepartment",formData,{
-      headers:{
-        Authorization:token
-      }
-    });
-    console.log(response.data.data);
-    
-    return response.data.data;
-  }catch(err){
-    return rejectWithValue(err.response?.data?.message || 'Registration failed');
+export const registerDepartment = createAsyncThunk(
+  "auth/registerDepartment",
+  async (formData, { rejectWithValue }) => {
+    try {
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      const token = user?.token;
+      const response = await axios.post(
+        `${BASE_URL}/admin/createdepartment`,
+        formData,
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+      console.log(response.data.data);
 
+      return response.data.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || "Registration failed"
+      );
+    }
   }
-})
+);
 
 //delete departments
 export const deleteDepartment = createAsyncThunk(
@@ -405,11 +399,14 @@ export const deleteDepartment = createAsyncThunk(
   async (_id, { rejectWithValue }) => {
     const adminToken = JSON.parse(localStorage.getItem("currentUser"))?.token;
     try {
-      const response = await axios.delete(`http://localhost:8000/admin/deletedepartment/${_id}`, {
-        headers: {
-          Authorization: adminToken
+      const response = await axios.delete(
+        `${BASE_URL}/admin/deletedepartment/${_id}`,
+        {
+          headers: {
+            Authorization: adminToken,
+          },
         }
-      });
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Delete failed");
@@ -420,48 +417,48 @@ export const deleteDepartment = createAsyncThunk(
 //update Department
 export const updateDepartment = createAsyncThunk(
   "auth/updateDepartment",
-  async ({ id, updatedData}, {rejectWithValue}) => {
-   const user = JSON.parse(localStorage.getItem("currentUser"));
-   const token = user?.token;
-   try{
-    const response = await axios.patch(`http://localhost:8000/admin/updatedepartment/${id}`,
-      updatedData,
-              {
-                headers: {
-                  Authorization: token,
-                },
-              }
-            );
-            console.log(response.data);
-            return response.data;
-          } catch (error) {
-            return rejectWithValue(error.response?.data || "Update failed");
-          }
+  async ({ id, updatedData }, { rejectWithValue }) => {
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    const token = user?.token;
+    try {
+      const response = await axios.patch(
+        `${BASE_URL}/admin/updatedepartment/${id}`,
+        updatedData,
+        {
+          headers: {
+            Authorization: token,
+          },
         }
       );
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Update failed");
+    }
+  }
+);
 
-      //view Department
-      export const viewDepartment= createAsyncThunk(
-        "auth/viewDepartment",
-        async (dIN, { rejectWithValue }) => {
-          const user = JSON.parse(localStorage.getItem("currentUser"));
-          const token = user?.token;
-          try {
-            const response = await axios.get(
-              `http://localhost:8000/admin/departmentbyid/${dIN}`,
-              {
-                headers: {
-                  Authorization: token,
-                },
-              }
-            );
-            console.log(response.data.data);
-            return response.data.data;
-          } catch (err) {
-            const errorMessage =
-              err.response?.data?.message || "'get data by id failed";
-            return rejectWithValue(errorMessage);
-          }
+//view Department
+export const viewDepartment = createAsyncThunk(
+  "auth/viewDepartment",
+  async (dIN, { rejectWithValue }) => {
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    const token = user?.token;
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/admin/departmentbyid/${dIN}`,
+        {
+          headers: {
+            Authorization: token,
+          },
         }
       );
-
+      console.log(response.data.data);
+      return response.data.data;
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message || "'get data by id failed";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
