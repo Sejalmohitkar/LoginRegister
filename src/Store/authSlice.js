@@ -20,6 +20,7 @@ const authSlice = createSlice({
       localStorage.removeItem("users");
     },
   },
+  
   extraReducers: (builder) => {
     builder
       // Handle Login

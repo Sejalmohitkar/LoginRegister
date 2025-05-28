@@ -9,6 +9,7 @@ import {
 } from "../../Store/docterConsutant/doctorThunk";
 import Sidebar from "./Sidebar";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
+// import { MdCancel} from "react-icons/md";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -35,12 +36,16 @@ function Consultant() {
   });
 
   //view
-  const [opendata, setOpendata] = useState(false);
-  const [allcosultant, setAllConsultant] = useState([]);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [allConsultant, setAllConsultant] = useState([]);
 
   //update
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
+
+  //delete popup(delete cancel)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -113,19 +118,6 @@ function Consultant() {
     setEditingId(item._id || item.id);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this consultant?")) {
-      try {
-        await dispatch(deleteDoctor(id)).unwrap();
-        toast.success("Consultant deleted successfully!");
-        dispatch(getConsultantData());
-      } catch (err) {
-        toast.error("Error deleting consultant.");
-        console.error("Delete error:", err);
-      }
-    }
-  };
-
   useEffect(() => {
     dispatch(getConsultantData());
   }, [dispatch]);
@@ -133,21 +125,42 @@ function Consultant() {
   //view
   const handleView = async (cIN) => {
     try {
-      await dispatch(viewConsultant(cIN)).unwrap();
-      setOpendata(true);
+      const result = await dispatch(viewConsultant(cIN)).unwrap();
+      setAllConsultant(result);
+      setShowViewModal(true);
     } catch (error) {
-      console.error("view error:", error);
+      console.error("View error:", error);
       toast.error("Failed to load consultant details.");
     }
   };
 
   useEffect(() => {
     if (ConsultantById) {
-      setAllConsultant(ConsultantById[0]);
-      setOpendata(false);
+      setAllConsultant(ConsultantById);
     }
   }, [ConsultantById]);
+
   console.log(ConsultantById);
+
+  //delete Department
+  const handleDelete = (cIN) => {
+    setSelectedDeleteId(cIN);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await dispatch(deleteDoctor(selectedDeleteId)).unwrap();
+      toast.success("Consultant deleted successfully!");
+      dispatch(getConsultantData());
+    } catch (err) {
+      console.log(err);
+      toast.error("failed to delete Department");
+    } finally {
+      setShowDeleteConfirm(false);
+      setSelectedDeleteId(null);
+    }
+  };
 
   const inputClass = "border w-52 px-3 py-1 rounded-md";
 
@@ -156,7 +169,10 @@ function Consultant() {
       <Sidebar />
       <div className="flex flex-col w-full p-2">
         <main className="flex flex-col p-6 overflow-auto">
-          <div className="mb-1 text-end">
+          <div className="mb-1 relative text-end">
+            <h2 className=" absolute mb-1 text-2xl font-bold text-gray-800 ">
+              Consultant Details
+            </h2>
             <button
               onClick={toggleForm}
               className="px-4 py-2 text-white transition duration-200 bg-blue-600 rounded-md hover:bg-blue-700"
@@ -306,7 +322,7 @@ function Consultant() {
                   "CIN",
                   "Name",
                   "Gender",
-                  "Date of Birth",
+                  "DOB",
                   "Specialty",
                   "Qualifications",
                   "License No.",
@@ -372,64 +388,90 @@ function Consultant() {
       <ToastContainer />
 
       {/* //view Department */}
-      {opendata && allcosultant && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="p-6 bg-white rounded shadow-lg w-50">
-            <h2 className="mb-4 text-xl font-semibold text-center">
-              Consultant Detail
+      {showViewModal && allConsultant && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
+          <div className="relative w-full max-w-md p-6 mx-auto mt-20 bg-white shadow-xl rounded-xl">
+            <button
+              onClick={() => setShowViewModal(false)}
+              className="absolute text-xl font-bold text-red-600 top-3 right-3 hover:text-red-800"
+            >
+              ×
+            </button>
+
+            <h2 className="mb-4 text-2xl font-bold text-gray-800 ">
+              Consultant Details
             </h2>
             <ul className="mb-4 space-y-2 text-sm">
               <li>
-                <strong>_id:</strong> {allcosultant._id}
+                <strong>cIN:</strong> {allConsultant[0].cIN}
               </li>
               <li>
-                <strong>cIN:</strong> {allcosultant.cIN}
+                <strong>Name:</strong> {allConsultant[0].name}
               </li>
               <li>
-                <strong>Name:</strong> {allcosultant.name}
+                <strong>Gender:</strong> {allConsultant[0].gender}
               </li>
               <li>
-                <strong>Gender:</strong> {allcosultant.gender}
+                <strong>Email:</strong> {allConsultant[0].email}
               </li>
               <li>
-                <strong>DOB:</strong> {allcosultant.dateOfBirth}
+                <strong>DOB:</strong> {allConsultant[0].dateOfBirth}
+              </li>
+
+              <li>
+                <strong>Specialty:</strong> {allConsultant[0].specialty}
               </li>
               <li>
-                <strong>Specialty:</strong> {allcosultant.specialty}
+                <strong>Qualification:</strong>{" "}
+                {allConsultant[0].qualifications}
               </li>
               <li>
-                <strong>Qualifications:</strong> {allcosultant.qualifications}
+                <strong>Medical Licence No:</strong>{" "}
+                {allConsultant[0].medicalLicenseNumber}
               </li>
               <li>
-                <strong>MedicalLicenseNumber:</strong>{" "}
-                {allcosultant.medicalLicenseNumber}
+                <strong>Phone:</strong> {allConsultant[0].phoneNumber}
               </li>
               <li>
-                <strong>yearsOfExperience:</strong>{" "}
-                {allcosultant.yearsOfExperience}
+                <strong>Experience (Years):</strong>{" "}
+                {allConsultant[0].yearsOfExperience}
               </li>
               <li>
-                <strong>Email:</strong> {allcosultant.email}
+                <strong>Username:</strong> {allConsultant[0].username}
+              </li>
+
+              <li>
+                <strong>Updated At:</strong> {allConsultant[0].updatedAt}
               </li>
               <li>
-                <strong>PhoneNumber:</strong> {allcosultant.phoneNumber}
-              </li>
-              <li>
-                <strong>Username:</strong> {allcosultant.username}
-              </li>
-              <li>
-                <strong>_createdAt:</strong> {allcosultant.createdAt}
-              </li>
-              <li>
-                <strong>_updatedAt:</strong> {allcosultant.updatedAt}
+                <strong>Created At:</strong> {allConsultant[0].createdAt}
               </li>
             </ul>
-            <button
-              onClick={() => setOpendata(false)}
-              className=" w-full px-4 mt-2 text-white bg-red-600 rounded hover:bg-red-700"
-            >
-              Close
-            </button>
+          </div>
+        </div>
+      )}
+
+      {/* delete Function */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-5">
+          <div className="p-6 bg-white rounded shadow-lg min-w-[350px]">
+            <h2 className="mb-4 text-lg font-semibold text-center">
+              Are you sure you want to delete this Department?
+            </h2>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 text-white bg-gray-600 rounded hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

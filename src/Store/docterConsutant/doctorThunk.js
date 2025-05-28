@@ -87,13 +87,13 @@ export const deleteDoctor = createAsyncThunk(
 
 ///ViewConsultant Data by Id
 export const viewConsultant = createAsyncThunk(
-  'doctor/viewConsultant',
+  'auth/viewConsultant',
   async (cIN, { rejectWithValue }) => {
     const user = JSON.parse(localStorage.getItem("currentUser"));
     const token = user?.token;
     try {
       const response = await axios.get(
-        `http://localhost:8000/admin/consutantbyid/${cIN}`,
+        `http://localhost:8000/admin/consutantbyid/${cIN}`,  
         {
           headers: {
             Authorization: token,
@@ -109,6 +109,7 @@ export const viewConsultant = createAsyncThunk(
     }
   }
 );
+
 
 // Get All Receptionist
 export const getallreception = createAsyncThunk(

@@ -26,8 +26,9 @@ const Departments = () => {
   const [opendata, setOpendata] = useState(false);
   const [alldepartment, setAlldepartment] = useState([]);
 
-  //delete popup(delete cancle)
-
+  //delete popup(delete cancel)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
   const [formData, setFormData] = useState({
     dIN: "",
@@ -66,18 +67,36 @@ const Departments = () => {
   // };
 
   //delete Department
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this consultant?")) {
-      try {
-        await dispatch(deleteDepartment(id)).unwrap();
-        toast.success("Patient deleted successfully!");
-        dispatch(getallDepartment());
-      } catch (err) {
-        toast.error("Error deleting consultant.");
-        console.error("Delete error:", err);
-      }
+  const handleDelete = (dIN) => {
+    setSelectedDeleteId(dIN);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await dispatch(deleteDepartment(selectedDeleteId)).unwrap();
+      toast.success("Consultant deleted successfully!");
+      dispatch(getallDepartment());
+    } catch (err) {
+      console.log(err);
+      toast.error("failed to delete Department");
+    } finally {
+      setShowDeleteConfirm(false);
+      setSelectedDeleteId(null);
     }
   };
+  // const handleDelete = async (id) => {
+  //   if (window.confirm("Are you sure you want to delete this consultant?")) {
+  //     try {
+  //       await dispatch(deleteDepartment(id)).unwrap();
+  //       toast.success("Patient deleted successfully!");
+  //       dispatch(getallDepartment());
+  //     } catch (err) {
+  //       toast.error("Error deleting consultant.");
+  //       console.error("Delete error:", err);
+  //     }
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -149,6 +168,9 @@ const Departments = () => {
       <div className="flex flex-col w-full p-2">
         <main className="flex flex-col p-6 overflow-auto">
           <div className="mb-1 text-end">
+            <h2 className=" absolute mb-1 text-2xl font-bold text-gray-800 ">
+              Department Details
+            </h2>
             <button
               onClick={toggleForm}
               className="px-2 py-2 text-white transition duration-200 bg-blue-600 rounded-md hover:bg-blue-700"
@@ -164,7 +186,7 @@ const Departments = () => {
         {showForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-white rounded-md shadow-lg p-6 min-w-[700px]  relative">
-            <h2 className="text-2xl font-semibold mb-4 text-center">
+              <h2 className="text-2xl font-semibold mb-4 text-center">
                 {isEditing ? "Update Department" : "Create Department"}
               </h2>
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -191,25 +213,24 @@ const Departments = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                   className="p-2 border rounded"
-                /> 
+                />
                 <div className="flex justify-end gap-3 mt-4 font-semibold md:col-span-2">
-                <button
-                  type="submit"
-                  className="px-6 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700"
-                >
-                  {isEditing ? "update" : "Create" }
-                </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700"
+                  >
+                    {isEditing ? "update" : "Create"}
+                  </button>
 
-                <button
-                type="button"
-                  onClick={toggleForm}
-                  className="px-6 py-2 text-white bg-gray-600 rounded-lg hover:bg-gray-700"
-                  aria-label="Close"
-                >
-                  Cancel
-                </button>
+                  <button
+                    type="button"
+                    onClick={toggleForm}
+                    className="px-6 py-2 text-white bg-gray-600 rounded-lg hover:bg-gray-700"
+                    aria-label="Close"
+                  >
+                    Cancel
+                  </button>
                 </div>
-
               </form>
             </div>
           </div>
@@ -261,9 +282,15 @@ const Departments = () => {
 
         {/* //view Department */}
         {opendata && alldepartment && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="p-6 bg-white rounded shadow-lg w-50">
-              <h2 className="mb-4 text-xl font-semibold text-center">
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
+            <div className="relative w-full max-w-md p-6 mx-auto mt-20 bg-white shadow-xl rounded-xl">
+              <button
+                onClick={() => setOpendata(false)}
+                className="absolute text-xl font-bold text-red-600 top-3 right-3 hover:text-red-800"
+              >
+                ×
+              </button>
+              <h2 className="mb-4 text-2xl font-bold text-gray-800">
                 Departments Details
               </h2>
               <ul className="mb-4 space-y-2 text-sm">
@@ -286,12 +313,31 @@ const Departments = () => {
                   <strong>_updatedAt:</strong> {alldepartment.updatedAt}
                 </li>
               </ul>
-              <button
-                onClick={() => setOpendata(false)}
-                className=" w-full px-4 mt-2 text-white bg-red-600 rounded hover:bg-red-700"
-              >
-                Close
-              </button>
+            </div>
+          </div>
+        )}
+
+        {/* delete Function */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-5">
+            <div className="p-6 bg-white rounded shadow-lg min-w-[350px]">
+              <h2 className="mb-4 text-lg font-semibold text-center">
+                Are you sure you want to delete this Department?
+              </h2>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-4 py-2 text-white bg-gray-600 rounded hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         )}

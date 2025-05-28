@@ -6,11 +6,11 @@ import {
   LayoutDashboard,
   Users,
   Stethoscope,
-  Calendar,
+  // Calendar,
   ClipboardList,
   Building,
-  LogIn,
-  AlertCircle,
+  // LogIn,
+  // AlertCircle,
 } from "lucide-react";
 
 const links = [
@@ -18,8 +18,8 @@ const links = [
   { to: "/consultant", label: "Consultants", icon: <Stethoscope size={20} /> },
   { to: "/patient", label: "Patients", icon: <Users size={20} /> },
   { to: "/receptionists", label: "Receptionists", icon: <ClipboardList size={20} /> },
-  { to: "/appointments", label: "Appointments", icon: <Calendar size={20} /> },
-  { to: "/patientdetail", label: "Patient Details", icon: <ClipboardList size={20} /> },
+  // { to: "/appointments", label: "Appointments", icon: <Calendar size={20} /> },
+  // { to: "/patientdetail", label: "Patient Details", icon: <ClipboardList size={20} /> },
   { to: "/department", label: "Departments", icon: <Building size={20} /> },
   // { to: "/", label: "Login", icon: <LogIn size={20} /> },
   // { to: "/notfound", label: "Not Found", icon: <AlertCircle size={20} /> },

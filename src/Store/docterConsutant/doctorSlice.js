@@ -100,8 +100,8 @@ const authSlice = createSlice({
         state.ConsultantById = action.payload;
       })
       .addCase(viewConsultant.rejected, (state, action) => {
-        state.loading = "failed";
-        state.error = action.error.message;
+        state.status = "failed"; 
+        state.error = action.error.message; 
       })
 
       //getallreceptionsit
@@ -294,7 +294,7 @@ const authSlice = createSlice({
       })
       .addCase(viewDepartment.fulfilled, (state, action) => {
         state.status = "Succeeded";
-        state.DepartmentdIN = action.payload;;
+        state.DepartmentdIN = action.payload;
       })
       .addCase(viewDepartment.rejected, (state, action) => {
         state.loading = "failed";

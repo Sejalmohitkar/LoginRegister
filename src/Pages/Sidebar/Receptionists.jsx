@@ -24,6 +24,10 @@ function Receptionist() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
+  //delete popup(delete cancel)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState(null);
+
   // handle view
   const [open, setOpen] = useState(false);
 
@@ -116,20 +120,27 @@ function Receptionist() {
   };
 
   // handle delete
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this consultant?")) {
-      try {
-        await dispatch(deleteReception(id)).unwrap();
-        toast.success("Consultant deleted successfully!");
-        dispatch(getallreception());
-      } catch (err) {
-        toast.error("Error deleting consultant.");
-        console.error("Delete error:", err);
-      }
+  //delete Department
+  const handleDelete = (dIN) => {
+    setSelectedDeleteId(dIN);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await dispatch(deleteReception(selectedDeleteId)).unwrap();
+      toast.success("Consultant deleted successfully!");
+      dispatch(getallreception());
+    } catch (err) {
+      console.log(err);
+      toast.error("failed to delete Department");
+    } finally {
+      setShowDeleteConfirm(false);
+      setSelectedDeleteId(null);
     }
   };
 
-  const inputClass = "border w-52 px-3 py-1 rounded-md";
+  const inputClass = "p-2 border rounded";
 
   return (
     <div className="flex">
@@ -137,6 +148,9 @@ function Receptionist() {
       <div className="flex flex-col w-full p-4">
         <main className="flex flex-col p-6 overflow-auto">
           <div className="mb-1 text-end">
+            <h2 className=" absolute mb-1 text-2xl font-bold text-gray-800 ">
+              Receptionist Details
+            </h2>
             <button
               onClick={toggleForm}
               className="px-4 py-2 text-white transition duration-200 bg-blue-600 rounded-md hover:bg-blue-700"
@@ -150,102 +164,122 @@ function Receptionist() {
         {status === "failed" && <p style={{ color: "red" }}>Error: {error}</p>}
 
         {showForm && (
-          <form
-            onSubmit={handleSubmit}
-            className="absolute right-0 z-10 grid grid-cols-1 gap-4 p-4 mb-6 mt-20 bg-gray-300 rounded-md shadow md:grid-cols-2"
-          >
-            <input
-              type="text"
-              name="rID"
-              value={formData.rID}
-              placeholder="rID"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              placeholder="Name"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              placeholder="Username"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              placeholder="Email"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="number"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              placeholder="Phone Number"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="text"
-              name="gender"
-              value={formData.gender}
-              placeholder="Gender"
-              onChange={handleInputChange}
-              className={inputClass}
-              list="genders"
-            />
-            <datalist id="genders">
-              <option value="Male" />
-              <option value="Female" />
-              <option value="Other" />
-            </datalist>
-            <input
-              type="date"
-              name="dateOfBirth"
-              value={formData.dateOfBirth}
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              placeholder="Password"
-              onChange={handleInputChange}
-              className={inputClass}
-            />
-            <button
-              type="submit"
-              className="w-full col-span-1 px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700 md:col-span-2"
-            >
-              {isEditing ? "Update" : "Create"}
-            </button>
-          </form>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white rounded-md shadow-lg p-6 min-w-[650px]  relative">
+              <h2 className="text-2xl font-semibold mb-4 text-center">
+                {isEditing ? "Update Department" : "Create Department"}
+              </h2>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <input
+                  type="text"
+                  name="rID"
+                  value={formData.rID}
+                  placeholder="rID"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  placeholder="Name"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  placeholder="Username"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  placeholder="Email"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="number"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  placeholder="Phone Number"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  name="gender"
+                  value={formData.gender}
+                  placeholder="Gender"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                  list="genders"
+                />
+                <datalist id="genders">
+                  <option value="Male" />
+                  <option value="Female" />
+                  <option value="Other" />
+                </datalist>
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  value={formData.dateOfBirth}
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  placeholder="Password"
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+                <div className="flex justify-end gap-3 mt-4 font-semibold md:col-span-2">
+                  <button
+                    type="submit"
+                    className="px-6 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700"
+                  >
+                    {isEditing ? "update" : "Create"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={toggleForm}
+                    className="px-6 py-2 text-white bg-gray-600 rounded-lg hover:bg-gray-700"
+                    aria-label="Close"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
 
         {/* handle Receptionist View */}
         {open && RecetionById && (
-          <div className="bg-slate-100  shadow-2xl z-30 rounded-md ms-10 absolute mt-36 right-96 p-4">
-            {Object.entries(RecetionById).map(([key, value]) => (
-              <p key={key}>
-                <strong>{key}:</strong> {value}
-              </p>
-            ))}
-            <button
-              onClick={() => setOpen(false)}
-              className="mt-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-            >
-              Close
-            </button>
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
+            <div className="relative w-full max-w-md p-6 mx-auto mt-20 bg-white shadow-xl rounded-xl">
+              <button
+                onClick={() => setOpen(false)}
+                className="absolute text-xl font-bold text-red-600 top-3 right-3 hover:text-red-800"
+              >
+                ×
+              </button>
+              <h2 className="mb-4 text-2xl font-bold text-gray-800">
+                Receptionist Details
+              </h2>
+              {Object.entries(RecetionById).map(([key, value]) => (
+                <p key={key}>
+                  <strong>{key}:</strong> {value}
+                </p>
+              ))}
+            </div>
           </div>
         )}
 
@@ -303,6 +337,31 @@ function Receptionist() {
         </div>
 
         <ToastContainer />
+
+        {/* delete Function */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-5">
+            <div className="p-6 bg-white rounded shadow-lg min-w-[350px]">
+              <h2 className="mb-4 text-lg font-semibold text-center">
+                Are you sure you want to delete this Department?
+              </h2>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-4 py-2 text-white bg-gray-600 rounded hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

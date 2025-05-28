@@ -37,7 +37,6 @@ const Login = () => {
     }
   };
   
-  
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
       <div className="flex w-full max-w-5xl bg-white rounded-xl shadow-lg overflow-hidden">

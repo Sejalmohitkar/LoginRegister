@@ -28,6 +28,9 @@ function Patients() {
   const [opendata, setOpendata] = useState(false);
   const [allpatient, setAllpatient] = useState([]);
 
+  //delete popup(delete cancel)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
   // get Reception data
   useEffect(() => {
@@ -110,40 +113,44 @@ function Patients() {
     setEditingId(item._id || item.id);
   };
 
-  // handle delete
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this consultant?")) {
-      try {
-        await dispatch(deletePatient(id)).unwrap();
-        toast.success("Patient deleted successfully!");
-        dispatch(getallPatient());
-      } catch (err) {
-        toast.error("Error deleting consultant.");
-        console.error("Delete error:", err);
-      }
+  //delete Department
+  const handleDelete = (pIN) => {
+    setSelectedDeleteId(pIN);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await dispatch(deletePatient(selectedDeleteId)).unwrap();
+      toast.success("Consultant deleted successfully!");
+      dispatch(getallPatient());
+    } catch (err) {
+      console.log(err);
+      toast.error("failed to delete Department");
+    } finally {
+      setShowDeleteConfirm(false);
+      setSelectedDeleteId(null);
     }
   };
 
-  //view 
-    const handleView = async (pIN) => {
-      try {
-        await dispatch(viewPatient(pIN)).unwrap();
-        setOpendata(true);
-      } catch (error) {
-        console.error("view error:", error);
-        toast.error("Failed to load department details.");
-      }
-    };
-  
-    useEffect(() => {
-      if (PatientById) {
-        setAllpatient(PatientById[0]);
-        setOpendata(false);
-      }
-    }, [PatientById]);
-    console.log(PatientById);
+  //view
+  const handleView = async (pIN) => {
+    try {
+      await dispatch(viewPatient(pIN)).unwrap();
+      setOpendata(true);
+    } catch (error) {
+      console.error("view error:", error);
+      toast.error("Failed to load department details.");
+    }
+  };
 
-  
+  useEffect(() => {
+    if (PatientById) {
+      setAllpatient(PatientById[0]);
+      setOpendata(false);
+    }
+  }, [PatientById]);
+  console.log(PatientById);
 
   return (
     <div className="flex">
@@ -151,6 +158,9 @@ function Patients() {
       <div className="flex flex-col w-full p-4">
         <main className="flex flex-col p-6 overflow-auto">
           <div className="mb-1 text-end">
+            <h2 className=" absolute mb-1 text-2xl font-bold text-gray-800 ">
+               Patients Details
+              </h2>
             <button
               onClick={toggleForm}
               className="px-4 py-2 text-white transition duration-200 bg-blue-600 rounded-md hover:bg-blue-700"
@@ -164,91 +174,106 @@ function Patients() {
         {status === "failed" && <p style={{ color: "red" }}>Error: {error}</p>}
 
         {showForm && (
-          <form
-            onSubmit={handleSubmit}
-            className="absolute right-0 z-10 grid grid-cols-1 gap-4 p-4 mb-6 mt-20 bg-gray-300 rounded-md shadow md:grid-cols-2"
-          >
-            <input
-              type="text"
-              name="pIN"
-              value={formData.pIN}
-              onChange={handleChange}
-              placeholder="pIN"
-              className="p-2 border rounded"
-            />
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Full Name"
-              className="p-2 border rounded"
-            />
-            <select
-              name="sex"
-              value={formData.sex}
-              onChange={handleChange}
-              className="p-2 border rounded"
-            >
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Female">others</option>
-            </select>
-            <input
-              type="date"
-              name="dob"
-              value={formData.dob}
-              onChange={handleChange}
-              className="p-2 border rounded"
-            />
-            <input
-              type="text"
-              name="age"
-              value={formData.age}
-              onChange={handleChange}
-              placeholder="Age"
-              className="p-2 border rounded"
-            />
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Address"
-              className="p-2 border rounded"
-            />
-            <input
-              type="text"
-              name="personal_ph_no"
-              value={formData.personal_ph_no}
-              onChange={handleChange}
-              placeholder="Phone Number"
-              className="p-2 border rounded"
-            />
-            <input
-              type="text"
-              name="patienttype"
-              value={formData.patienttype}
-              onChange={handleChange}
-              placeholder="Patient Type"
-              className="p-2 border rounded"
-            />
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Password"
-              className="p-2 border rounded"
-            />
-            <button
-              type="submit"
-              className="w-full col-span-1 px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700 md:col-span-2"
-            >
-              {isEditing ? "Update" : "Create"}
-            </button>
-          </form>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white rounded-md shadow-lg p-6 min-w-[650px]  relative">
+              <h2 className="text-2xl font-semibold mb-4 text-center">
+                {isEditing ? "Update Department" : "Create Department"}
+              </h2>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <input
+                  type="text"
+                  name="pIN"
+                  value={formData.pIN}
+                  onChange={handleChange}
+                  placeholder="pIN"
+                  className="p-2 border rounded"
+                />
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Full Name"
+                  className="p-2 border rounded"
+                />
+                <select
+                  name="sex"
+                  value={formData.sex}
+                  onChange={handleChange}
+                  className="p-2 border rounded"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Female">others</option>
+                </select>
+                <input
+                  type="date"
+                  name="dob"
+                  value={formData.dob}
+                  onChange={handleChange}
+                  className="p-2 border rounded"
+                />
+                <input
+                  type="text"
+                  name="age"
+                  value={formData.age}
+                  onChange={handleChange}
+                  placeholder="Age"
+                  className="p-2 border rounded"
+                />
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Address"
+                  className="p-2 border rounded"
+                />
+                <input
+                  type="text"
+                  name="personal_ph_no"
+                  value={formData.personal_ph_no}
+                  onChange={handleChange}
+                  placeholder="Phone Number"
+                  className="p-2 border rounded"
+                />
+                <input
+                  type="text"
+                  name="patienttype"
+                  value={formData.patienttype}
+                  onChange={handleChange}
+                  placeholder="Patient Type"
+                  className="p-2 border rounded"
+                />
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  className="p-2 border rounded"
+                />
+                <div className="flex justify-end gap-3 mt-4 font-semibold md:col-span-2">
+                  <button
+                    type="submit"
+                    className="px-6 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700"
+                  >
+                    {isEditing ? "update" : "Create"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={toggleForm}
+                    className="px-6 py-2 text-white bg-gray-600 rounded-lg hover:bg-gray-700"
+                    aria-label="Close"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
 
         <div className="relative mt-4 overflow-x-auto">
@@ -307,16 +332,22 @@ function Patients() {
         </div>
 
         <ToastContainer />
-                {/* //view Department */}
-          {opendata && allpatient && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="p-6 bg-white rounded shadow-lg w-50">
-              <h2 className="mb-4 text-xl font-semibold text-center">
+        {/* //view Department */}
+        {opendata && allpatient && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
+            <div className="relative w-full max-w-md p-6 mx-auto mt-20 bg-white shadow-xl rounded-xl">
+              <button
+                onClick={() => setOpendata(false)}
+                className="absolute text-xl font-bold text-red-600 top-3 right-3 hover:text-red-800"
+              >
+                ×
+              </button>
+              <h2 className="mb-4 text-2xl font-bold text-gray-800">
                 Patients Detail
               </h2>
               <ul className="mb-4 space-y-2 text-sm">
                 <li>
-                  <strong>_id:</strong> {allpatient._id} 
+                  <strong>_id:</strong> {allpatient._id}
                 </li>
                 <li>
                   <strong>pIN:</strong> {allpatient.pIN}
@@ -349,12 +380,31 @@ function Patients() {
                   <strong>_updatedAt:</strong> {allpatient.updatedAt}
                 </li>
               </ul>
-              <button
-                onClick={() => setOpendata(false)}
-                className=" w-full px-4 mt-2 text-white bg-red-600 rounded hover:bg-red-700"
-              >
-                Close
-              </button>
+            </div>
+          </div>
+        )}
+
+        {/* delete Function */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-5">
+            <div className="p-6 bg-white rounded shadow-lg min-w-[350px]">
+              <h2 className="mb-4 text-lg font-semibold text-center">
+                Are you sure you want to delete this Department?
+              </h2>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-4 py-2 text-white bg-gray-600 rounded hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         )}
